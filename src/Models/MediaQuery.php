@@ -34,6 +34,16 @@ class MediaQuery
     }
 
     /**
+     * @param string $shortcode
+     * @return mixed|null
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function shortcode(string $shortcode)
+    {
+        return $this->_apiClient->query('/oembed', 'get', ['url' => 'http://instagr.am/p/' . $shortcode]);
+    }
+
+    /**
      * @param string $id
      * @return mixed|null
      * @throws \GuzzleHttp\Exception\GuzzleException

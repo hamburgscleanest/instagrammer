@@ -76,7 +76,9 @@ class ApiClient
             return null;
         }
 
-        return \GuzzleHttp\json_decode($response)->data;
+        $object = \GuzzleHttp\json_decode($response);
+
+        return \property_exists($object, 'data') ? $object->data : $object;
     }
 
     /**
