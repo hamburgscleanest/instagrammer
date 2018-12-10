@@ -9,28 +9,17 @@ namespace hamburgscleanest\Instagrammer\Models;
 class LocationQuery
 {
 
-    /** @var ApiClient */
-    private $_apiClient;
-
-    /**
-     * LocationQuery constructor.
-     * @throws \Exception
-     */
-    public function __construct()
-    {
-        $this->_apiClient = new ApiClient();
-    }
-
     /**
      * @param string $url
      * @param array $params
      * @param string $method
      * @return mixed|null
      * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Exception
      */
     private function _query(string $url, array $params = [], string $method = 'get')
     {
-        return $this->_apiClient->query('locations/' . $url, $method, $params);
+        return ApiClient::create()->query('locations/' . $url, $method, $params);
     }
 
     /**
@@ -52,7 +41,7 @@ class LocationQuery
      * @return mixed|null
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function recentMedia(string $id, float $minTimestamp = null, float $maxTimestamp = null, string $minId = null, string $maxId = null)
+    public function recentMedia(string $id, ?float $minTimestamp = null, ?float $maxTimestamp = null, ?string $minId = null, ?string $maxId = null)
     {
         return $this->_query(
             $id . '/media/recent',

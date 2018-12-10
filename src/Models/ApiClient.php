@@ -15,7 +15,11 @@ use Illuminate\Config\Repository;
 class ApiClient
 {
 
-    private const INSTAGRAM_API_URL = 'https://api.instagram.com/v1/';
+    private const INSTAGRAM_API_URL = 'https://api.instagram.com';
+    private const BASE_RULES        = [
+        'max_requests'     => 200,
+        'request_interval' => 3600
+    ];
 
     /** @var Client */
     private $_client;
@@ -24,10 +28,25 @@ class ApiClient
     private $_accessToken;
 
     /**
+     * @param int|null $version
+     * @return string
+     */
+    private function _getVersionedApiUrl(?int $version = null) : string
+    {
+        if (!$version)
+        {
+            return self::INSTAGRAM_API_URL;
+        }
+
+        return self::INSTAGRAM_API_URL . '/v' . $version . '/';
+    }
+
+    /**
      * ApiClient constructor.
+     * @param int $version
      * @throws \Exception
      */
-    public function __construct()
+    public function __construct(int $version = 1)
     {
         $config = \config('instagrammer');
         $cacheConfig = $config['cache'];
@@ -38,27 +57,33 @@ class ApiClient
          * https://developers.facebook.com/docs/instagram-api/overview/#rate-limiting
          */
         $this->_client = ClientHelper::getThrottledClient(
-            ['base_uri' => self::INSTAGRAM_API_URL],
+            ['base_uri' => $this->_getVersionedApiUrl($version)],
             new RequestLimitRuleset(
                 [
-                    self::INSTAGRAM_API_URL . '/media/comments' => [
+                    $this->_getVersionedApiUrl($version) . '/media/comments' => [
                         [
                             'max_requests'     => 60,
                             'request_interval' => 3600
                         ]
                     ],
-                    self::INSTAGRAM_API_URL                     => [
-                        [
-                            'max_requests'     => 200,
-                            'request_interval' => 3600
-                        ]
-                    ]
+                    $this->_getVersionedApiUrl($version)                     => [self::BASE_RULES],
+                    self::INSTAGRAM_API_URL                                  => [self::BASE_RULES]
                 ],
                 $cacheConfig['strategy'],
                 'laravel',
                 new Repository(ConfigHelper::getMiddlewareConfig($cacheConfig['driver'], $cacheConfig['ttl']))
             )
         );
+    }
+
+    /**
+     * @param int $version
+     * @return ApiClient
+     * @throws \Exception
+     */
+    public static function create(int $version = 1) : self
+    {
+        return new ApiClient($version);
     }
 
     /**
@@ -79,27 +104,5 @@ class ApiClient
         $object = \GuzzleHttp\json_decode($response);
 
         return \property_exists($object, 'data') ? $object->data : $object;
-    }
-
-    /**
-     * @param string $url
-     * @param array $params
-     * @return mixed|null
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    public function get(string $url, array $params = [])
-    {
-        return $this->query($url, 'get', $params);
-    }
-
-    /**
-     * @param string $url
-     * @param array $params
-     * @return mixed|null
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    public function post(string $url, array $params = [])
-    {
-        return $this->query($url, 'post', $params);
     }
 }

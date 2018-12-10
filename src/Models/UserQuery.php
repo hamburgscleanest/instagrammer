@@ -2,6 +2,7 @@
 
 namespace hamburgscleanest\Instagrammer\Models;
 
+use hamburgscleanest\Instagrammer\Exceptions\UndefinedUser;
 use hamburgscleanest\Instagrammer\Exceptions\UnknownAction;
 
 /**
@@ -10,9 +11,6 @@ use hamburgscleanest\Instagrammer\Exceptions\UnknownAction;
  */
 class UserQuery
 {
-
-    /** @var ApiClient */
-    private $_apiClient;
 
     private const KNOWN_ACTIONS = [
         'follow',
@@ -24,24 +22,16 @@ class UserQuery
     ];
 
     /**
-     * UserQuery constructor.
-     * @throws \Exception
-     */
-    public function __construct()
-    {
-        $this->_apiClient = new ApiClient();
-    }
-
-    /**
      * @param string $url
      * @param array $params
      * @param string $method
      * @return mixed|null
      * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Exception
      */
     private function _query(string $url, array $params = [], string $method = 'get')
     {
-        return $this->_apiClient->query('users/' . $url, $method, $params);
+        return ApiClient::create()->query('users/' . $url, $method, $params);
     }
 
     /**
@@ -101,7 +91,7 @@ class UserQuery
      * @return mixed|null
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function liked(int $resultCount = 50, string $maxMediaId = null)
+    public function liked(int $resultCount = 50, ?string $maxMediaId = null)
     {
         return $this->_query('self/media/liked', ['count' => $resultCount, 'max_like_id' => $maxMediaId]);
     }
@@ -153,66 +143,18 @@ class UserQuery
     }
 
     /**
-     * TODO: Refactor -> move actions out of here :)
-     */
-
-    /**
-     * @param string $userId
+     * @param string $name
+     * @param array $arguments
      * @return mixed|null
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function follow(string $userId)
+    public function __call(string $name, array $arguments)
     {
-        return $this->action($userId, 'follow');
-    }
+        if (\count($arguments) === 0)
+        {
+            throw new UndefinedUser();
+        }
 
-    /**
-     * @param string $userId
-     * @return mixed|null
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    public function unfollow(string $userId)
-    {
-        return $this->action($userId, 'follow');
-    }
-
-    /**
-     * @param string $userId
-     * @return mixed|null
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    public function block(string $userId)
-    {
-        return $this->action($userId, 'block');
-    }
-
-    /**
-     * @param string $userId
-     * @return mixed|null
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    public function unblock(string $userId)
-    {
-        return $this->action($userId, 'unblock');
-    }
-
-    /**
-     * @param string $userId
-     * @return mixed|null
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    public function approve(string $userId)
-    {
-        return $this->action($userId, 'approve');
-    }
-
-    /**
-     * @param string $userId
-     * @return mixed|null
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    public function ignore(string $userId)
-    {
-        return $this->action($userId, 'ignore');
+        return $this->action($arguments[0] ?? 'undefined', $name);
     }
 }

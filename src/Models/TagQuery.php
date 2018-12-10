@@ -9,28 +9,17 @@ namespace hamburgscleanest\Instagrammer\Models;
 class TagQuery
 {
 
-    /** @var ApiClient */
-    private $_apiClient;
-
-    /**
-     * TagQuery constructor.
-     * @throws \Exception
-     */
-    public function __construct()
-    {
-        $this->_apiClient = new ApiClient();
-    }
-
     /**
      * @param string $url
      * @param array $params
      * @param string $method
      * @return mixed|null
      * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Exception
      */
     private function _query(string $url, array $params = [], string $method = 'get')
     {
-        return $this->_apiClient->query('tags/' . $url, $method, $params);
+        return ApiClient::create()->query('tags/' . $url, $method, $params);
     }
 
 
@@ -62,7 +51,7 @@ class TagQuery
      * @return mixed|null
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function recentMedia(string $name, int $resultCount = 15, string $minTagId = null, string $maxTagId = null)
+    public function recentMedia(string $name, int $resultCount = 15, ?string $minTagId = null, ?string $maxTagId = null)
     {
         return $this->_query($name . '/media/recent', ['count' => $resultCount, 'min_tag_id' => $minTagId, 'max_tag_id' => $maxTagId]);
     }

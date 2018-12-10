@@ -9,38 +9,28 @@ namespace hamburgscleanest\Instagrammer\Models;
 class MediaQuery
 {
 
-    /** @var ApiClient */
-    private $_apiClient;
-
-    /**
-     * MediaQuery constructor.
-     * @throws \Exception
-     */
-    public function __construct()
-    {
-        $this->_apiClient = new ApiClient();
-    }
-
     /**
      * @param string $url
      * @param array $params
      * @param string $method
      * @return mixed|null
      * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Exception
      */
     private function _query(string $url, array $params = [], string $method = 'get')
     {
-        return $this->_apiClient->query('media/' . $url, $method, $params);
+        return ApiClient::create()->query('media/' . $url, $method, $params);
     }
 
     /**
      * @param string $shortcode
      * @return mixed|null
      * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws \Exception
      */
     public function shortcode(string $shortcode)
     {
-        return $this->_apiClient->query('/oembed', 'get', ['url' => 'http://instagr.am/p/' . $shortcode]);
+        return ApiClient::create(null)->query('/oembed', 'get', ['url' => 'http://instagr.am/p/' . $shortcode]);
     }
 
     /**
@@ -69,7 +59,7 @@ class MediaQuery
      * @return mixed|null
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function search(Location $location = null, int $minTimestamp = null, int $maxTimestamp = null)
+    public function search(?Location $location = null, ?int $minTimestamp = null, ?int $maxTimestamp = null)
     {
         return $this->_query(
             'search',

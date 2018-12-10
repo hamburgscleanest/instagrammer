@@ -19,10 +19,10 @@ class Instagrammer
     }
 
     /**
-     * @return mixed|null
+     * @return MediaQuery
      * @throws \Exception
      */
-    public function media()
+    public function media() : MediaQuery
     {
         return new MediaQuery();
     }
